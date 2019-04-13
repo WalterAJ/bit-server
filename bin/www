@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('biteserver:server');
+var http = require('http');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '9999');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+const io = require('socket.io')(server);
+global.io = io
+io.on('connection', function (socket) {
+  // console.log('a user connected');
+  // socket.broadcast.emit('new_user', {});
+  console.log('connected', socket.id)
+  socket.on('addUser', msg => {
+    const { OID } = msg
+    console.log(msg, OID, socket.id)
+    global.users[OID] = socket.id
+  })
+  socket.on('disconnect', function () {
+    console.log('user disconnected   ', socket.id);
+    for (k in global.users) {
+      if (global.users[k] == socket.id) {
+        delete global.users[k]
+      }
+    }
+  });
+  socket.on('error', function (err) {
+    console.log('socket err', err)
+  })
+  socket.on('checkOrder', msg => {
+    let { OID, order } = msg
+    let fromIDS = {
+			wyq: `oEwij0-ryS8R56w2xWriEFaKejiU`,
+			wd: `oEwij06p7u8GpwVw6NSk7xWZ2dIU`
+		}
+		let toIDS = {
+			wj: `oEwij06DcL-vVQlbvDqtRq9Bhzv0`,
+			lhr: `oEwij0z6VEeRMKKCN21nEaOQgThM`
+    }
+    let checkId = ''
+    let SID = ''
+    if (OID == toIDS.lhr) {
+      console.log('发送给韦导')
+      checkId = fromIDS.wd
+    }
+    else {
+      console.log('发送给wyq')
+      checkId = fromIDS.wyq
+    }
+    console.log('users', users)
+    SID = users[checkId]
+    console.log('即将发送', checkId, SID)
+    io.sockets.to(SID).emit('checkOrder', {
+			order
+		})
+  })
+});
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
