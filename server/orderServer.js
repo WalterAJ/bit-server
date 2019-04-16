@@ -3,7 +3,7 @@ const getUnCheckedOrders = num => {
 	return new Promise((resolve, rej) => {
 		db.getConnection((err, cn) => {
 			if (err) throw err
-			let sql = `select orders.*, address.address from orders left join address on address.id = orders.addressId where state='uncheck' order by startTime desc limit 0, ${num}`//查询状态为待接单订单
+			let sql = `select orders.*, address.address from orders left join address on address.id = orders.addressId where state='待接单' order by startTime desc limit 0, ${num}`//查询状态为待接单订单
 			cn.query(sql, null, (err, rs) => {//连接数据库查询
 				if (err) throw err
 				resolve(rs);

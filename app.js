@@ -8,6 +8,7 @@ const RecyclerOrders = require('./routes/RecyclerOrders')
 const UserOrders = require('./routes/UserOrders')
 const Address = require('./routes/Address')
 const User = require('./routes/User')
+const Yd = require('./routes/Yd')
 const Recyclers = require('./routes/Recyclers')
 var app = express();
 global.users = {}
@@ -25,6 +26,7 @@ app.use('/api/recycler/orders', RecyclerOrders);
 app.use('/api/userOrders', UserOrders)
 app.use('/api/address', Address)
 app.use('/api/user', User)
+app.use('/api/yd', Yd)
 app.use('/api/recycler/userInfo', Recyclers);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
